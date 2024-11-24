@@ -1,0 +1,108 @@
+import tkinter as tk
+from tkinter import messagebox
+import time
+import math
+
+
+def update_clock():
+    # Get the current time
+    hours = time.localtime().tm_hour
+    minutes = time.localtime().tm_min
+    seconds = time.localtime().tm_sec
+
+    # Calculate angles for the hands
+    seconds_angle = seconds * 6  # Each second is 6 degrees
+    minutes_angle = (minutes + seconds / 60) * 6  # Each minute is 6 degrees
+    hours_angle = (hours % 12 + minutes / 60) * 30  # Each hour is 30 degrees
+
+    # Clear the canvas
+    canvas.delete("all")
+
+    # Draw the clock face
+    canvas.create_oval(center_x - radius, center_y - radius,
+                       center_x + radius, center_y + radius)
+
+    for i in range(1, 13):
+        angle = math.radians(i * 30)
+        x = center_x + (radius - 20) * math.sin(angle)
+        y = center_y - (radius - 20) * math.cos(angle)
+        canvas.create_text(x, y, text=str(i), font=(
+            "Arial", 16), fill="black")
+
+# Draw the hands
+# Second hand
+    canvas.create_line(center_x, center_y,
+                       center_x + radius *
+                       math.sin(math.radians(seconds_angle)),
+                       center_y - radius *
+                       math.cos(math.radians(seconds_angle)),
+                       fill="red", width=2)
+# Minute hand
+    canvas.create_line(center_x, center_y,
+                       center_x + radius * 0.8 *
+                       math.sin(math.radians(minutes_angle)),
+                       center_y - radius * 0.8 *
+                       math.cos(math.radians(minutes_angle)),
+                       fill="black", width=4)
+# Hour hand
+    canvas.create_line(center_x, center_y,
+                       center_x + radius * 0.5 *
+                       math.sin(math.radians(hours_angle)),
+                       center_y - radius * 0.5 *
+                       math.cos(math.radians(hours_angle)),
+                       fill="black", width=6)
+
+    if alarm_active:
+        if hours == alarm_hour.get() and minutes == alarm_minute.get():
+            trigger_alarm()
+
+
+# Schedule the next update
+    canvas.after(1000, update_clock)
+
+
+def trigger_alarm():
+    messagebox.showinfo("alarm", "it's time")
+
+
+def set_alarm():
+    global alarm_active
+    alarm_active = True
+    messagebox.showinfo(
+        "Alarm set",
+        f"Alarm set for {alarm_hour.get():02}:{alarm_minute.get():02}")
+
+
+# Create the main window
+root = tk.Tk()
+root.title("Analog Clock with alarm")
+
+# Create the canvas
+canvas = tk.Canvas(root, width=400, height=400, bg="white")
+canvas.pack()
+
+# Define the clock's center and radius
+center_x = 200
+center_y = 200
+radius = 150
+
+alarm_hour = tk.IntVar()
+alarm_minute = tk.IntVar()
+alarm_active = False
+
+frame = tk.Frame(root)
+frame.pack()
+
+tk.Label(frame, text="Set alarm:").grid(row=0, column=0)
+tk.Label(frame, text="hour:").grid(row=0, column=1)
+tk.Entry(frame, textvariable=alarm_hour,  width=5).grid(row=0, column=2)
+tk.Label(frame, text="minute:").grid(row=0, column=3)
+tk.Entry(frame, textvariable=alarm_minute, width=5).grid(row=0, column=4)
+tk.Button(frame, text="Set alarm", command=set_alarm).grid(row=0, column=5)
+
+
+# Start the clock update loop
+update_clock()
+
+# Run the Tkinter event loop
+root.mainloop()
